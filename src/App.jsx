@@ -1,79 +1,68 @@
+
 import { useState } from 'react';
 import { ethers } from 'ethers';
+import abi from './abi.json';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  const [title, setTitle] = useState('');
-  const [taskText, setTaskText] = useState('');
-  const [tasks, setTasks] = useState([]);
+  const [amount, setAmount] = useState('');
+  const [balance, setBalance] = useState('');
   const contractAddress = '0xd29cB566b7ea69c60920183444ddAf4835C5d818';
-
-  // Your contract ABI - save this in abi.json
-  const abi = [
-    "function addTask(string memory taskText, string memory taskTitle, bool isDeleted) external",
-    "function deleteTask(uint taskId) external",
-    "function getMyTask() public view returns(tuple(uint256 id, string taskTitle, string taskText, bool isDeleted)[] memory)",
-    "event AddTask(address recepient, uint taskId)",
-    "event DeleteTask(uint taskId, bool isDeleted)"
-  ];
 
   async function requestAccounts() {
     await window.ethereum.request({ method: 'eth_requestAccounts' });
   }
 
-  async function getTasks() {
+  async function getBalance() {
     if (typeof window.ethereum !== 'undefined') {
       await requestAccounts();
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(contractAddress, abi, provider);
-      
       try {
-        const myTasks = await contract.getMyTask();
-        setTasks(myTasks);
-        toast.success('Tasks fetched successfully!');
+        const contractBalance = await contract.getBalance();
+        setBalance(ethers.formatEther(contractBalance));
+        toast.success('Balance fetched successfully!');
       } catch (err) {
-        toast.error('Error fetching tasks: ' + err.message);
+        toast.error('Error fetching balance: ' + err.message);
       }
     }
   }
 
-  async function addTask() {
+  async function deposit() {
     if (typeof window.ethereum !== 'undefined') {
       await requestAccounts();
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(contractAddress, abi, signer);
-
       try {
-        const tx = await contract.addTask(taskText, title, false);
-        toast.info('Adding task...');
+        const tx = await contract.deposit({ value: ethers.parseEther(amount) });
+        toast.info('Depositing...');
         await tx.wait();
-        toast.success('Task added successfully!');
-        setTitle('');
-        setTaskText('');
-        getTasks();
+        toast.success('Deposit successful!');
+        setAmount('');
+        getBalance();
       } catch (err) {
-        toast.error('Error adding task: ' + err.message);
+        toast.error('Error depositing: ' + err.message);
       }
     }
   }
 
-  async function deleteTask(taskId) {
+  async function withdraw() {
     if (typeof window.ethereum !== 'undefined') {
       await requestAccounts();
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(contractAddress, abi, signer);
-
       try {
-        const tx = await contract.deleteTask(taskId);
-        toast.info('Deleting task...');
+        const tx = await contract.withdraw(ethers.parseEther(amount));
+        toast.info('Withdrawing...');
         await tx.wait();
-        toast.success('Task deleted successfully!');
-        getTasks();
+        toast.success('Withdrawal successful!');
+        setAmount('');
+        getBalance();
       } catch (err) {
-        toast.error('Error deleting task: ' + err.message);
+        toast.error('Error withdrawing: ' + err.message);
       }
     }
   }
@@ -82,40 +71,21 @@ function App() {
     <div style={{ padding: '20px' }}>
       <ToastContainer position="top-right" autoClose={5000} />
       
-      <h1>Task Manager</h1>
+      <h1>Ethereum Wallet</h1>
+      <p>Contract Balance: {balance} ETH</p>
       
       <div style={{ marginBottom: '20px' }}>
         <input
           type="text"
-          placeholder="Task Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Amount in ETH"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
           style={{ margin: '5px' }}
         />
-        <input
-          type="text"
-          placeholder="Task Description"
-          value={taskText}
-          onChange={(e) => setTaskText(e.target.value)}
-          style={{ margin: '5px' }}
-        />
-        <button onClick={addTask} style={{ margin: '5px' }}>Add Task</button>
+        <button onClick={deposit} style={{ margin: '5px' }}>Deposit</button>
+        <button onClick={withdraw} style={{ margin: '5px' }}>Withdraw</button>
       </div>
-
-      <button onClick={getTasks} style={{ margin: '5px' }}>Refresh Tasks</button>
-
-      <div>
-        <h2>My Tasks</h2>
-        {tasks.map((task) => (
-          <div key={task.id.toString()} style={{ margin: '10px 0', padding: '10px', border: '1px solid #ccc' }}>
-            <h3>{task.taskTitle}</h3>
-            <p>{task.taskText}</p>
-            <button onClick={() => deleteTask(task.id)} style={{ margin: '5px' }}>
-              Delete
-            </button>
-          </div>
-        ))}
-      </div>
+      <button onClick={getBalance} style={{ margin: '5px' }}>Refresh Balance</button>
     </div>
   );
 }
