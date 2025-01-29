@@ -7,7 +7,7 @@ function App() {
   const [title, setTitle] = useState('');
   const [taskText, setTaskText] = useState('');
   const [tasks, setTasks] = useState([]);
-  const contractAddress = 'YOUR_CONTRACT_ADDRESS_HERE';
+  const contractAddress = '0xd29cB566b7ea69c60920183444ddAf4835C5d818';
 
   // Your contract ABI - save this in abi.json
   const abi = [
