@@ -1,5 +1,5 @@
 # Assessment
-# - A minimal React application built with Vite that interacts with an Ethereum smart contract to manage task add up and removal. -
+# - A minimal React application built with Vite that interacts with an Ethereum smart contract to manage task add-up and removal and deletion of tasks. -
 
 
 Contract Address:	
