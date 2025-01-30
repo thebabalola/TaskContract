@@ -24,12 +24,4 @@ dist-ssr
 *.sw?
 
 
-# Ignore package.json
-package.json
-
-# Ignore vite.config.js
-vite.config.js
-
-# Ignore package.json
-package-lock.json
 
