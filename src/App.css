@@ -1,68 +1,65 @@
-.app-container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
+body {
   font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+  justify-content: center;
 }
 
-h1,
-h2 {
+h1 {
   color: #333;
 }
 
-.connect-wallet-btn {
-  background-color: #4caf50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.input-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
 input {
+  width: 80%;
+  max-width: 400px;
   padding: 10px;
-  border: 1px solid #ddd;
+  margin: 10px 0;
+  border: 1px solid #ccc;
   border-radius: 5px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 button {
-  background-color: #008cba;
+  background-color: #007bff;
   color: white;
-  padding: 10px;
   border: none;
+  padding: 10px 20px;
+  font-size: 16px;
   border-radius: 5px;
   cursor: pointer;
+  margin: 10px;
 }
 
-.task-list {
-  list-style-type: none;
+button:hover {
+  background-color: #0056b3;
+}
+
+ul {
+  list-style: none;
   padding: 0;
 }
 
-.task-item {
+li {
+  background: white;
+  padding: 15px;
+  margin: 10px auto;
+  border-radius: 5px;
+  width: 80%;
+  max-width: 500px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  border: 1px solid #ddd;
-  margin-bottom: 10px;
-  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 
-.delete-btn {
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 3px;
-  cursor: pointer;
+li button {
+  background-color: #dc3545;
 }
 
+li button:hover {
+  background-color: #a71d2a;
+}
