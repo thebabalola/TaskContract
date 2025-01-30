@@ -1,93 +1,132 @@
+import { ethers } from "ethers"
+import { useState, useEffect } from "react"
+import abi from "./abi.json"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import "./App.css"
 
-import { useState } from 'react';
-import { ethers } from 'ethers';
-import abi from './abi.json';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+const App = () => {
+  const [taskTitle, setTaskTitle] = useState("")
+  const [taskText, setTaskText] = useState("")
+  const [tasks, setTasks] = useState([])
+  const [walletConnected, setWalletConnected] = useState(false)
+  const contractAddress = "0x2e7e2f04285Ae3D08ec78836107715EE49E8885e"
 
-function App() {
-  const [amount, setAmount] = useState('');
-  const [balance, setBalance] = useState('');
-  const contractAddress = '0xd29cB566b7ea69c60920183444ddAf4835C5d818';
-
-  async function requestAccounts() {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
+  async function connectWallet() {
+    if (window.ethereum) {
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" })
+        setWalletConnected(true)
+        toast.success("Wallet connected successfully!")
+        getMyTask()
+      } catch {
+        toast.error("Failed to connect wallet.")
+      }
+    } else {
+      toast.error("Please install MetaMask!")
+    }
   }
 
-  async function getBalance() {
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccounts();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(contractAddress, abi, provider);
+  async function getMyTask() {
+    if (window.ethereum && walletConnected) {
       try {
-        const contractBalance = await contract.getBalance();
-        setBalance(ethers.formatEther(contractBalance));
-        toast.success('Balance fetched successfully!');
-      } catch (err) {
-        toast.error('Error fetching balance: ' + err.message);
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        const signer = await provider.getSigner()
+        const coreContract = new ethers.Contract(contractAddress, abi, signer)
+
+        const taskList = await coreContract.getMyTask()
+        setTasks(taskList)
+      } catch {
+        toast.error("Failed to fetch tasks")
       }
     }
   }
 
-  async function deposit() {
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccounts();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(contractAddress, abi, signer);
+  async function addTask() {
+    if (window.ethereum && walletConnected) {
       try {
-        const tx = await contract.deposit({ value: ethers.parseEther(amount) });
-        toast.info('Depositing...');
-        await tx.wait();
-        toast.success('Deposit successful!');
-        setAmount('');
-        getBalance();
-      } catch (err) {
-        toast.error('Error depositing: ' + err.message);
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        const signer = await provider.getSigner()
+        const coreContract = new ethers.Contract(contractAddress, abi, signer)
+
+        const addTasksTx = await coreContract.addTask(taskTitle, taskText, false)
+        await addTasksTx.wait()
+        toast.success("Task added successfully!")
+        getMyTask()
+        setTaskTitle("")
+        setTaskText("")
+      } catch {
+        toast.error("Failed to add task")
+      }
+    } else {
+      toast.error("Please connect your wallet first")
+    }
+  }
+
+  async function deleteTask(taskId) {
+    if (window.ethereum && walletConnected) {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum)
+        const signer = await provider.getSigner()
+        const coreContract = new ethers.Contract(contractAddress, abi, signer)
+
+        const deleteTasksTx = await coreContract.deleteTask(taskId)
+        await deleteTasksTx.wait()
+        toast.success("Task deleted successfully!")
+        getMyTask()
+      } catch {
+        toast.error("Failed to delete task")
       }
     }
   }
 
-  async function withdraw() {
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccounts();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(contractAddress, abi, signer);
-      try {
-        const tx = await contract.withdraw(ethers.parseEther(amount));
-        toast.info('Withdrawing...');
-        await tx.wait();
-        toast.success('Withdrawal successful!');
-        setAmount('');
-        getBalance();
-      } catch (err) {
-        toast.error('Error withdrawing: ' + err.message);
-      }
+  useEffect(() => {
+    if (walletConnected) {
+      getMyTask()
     }
-  }
+  }, [walletConnected, getMyTask]) // Added getMyTask to dependencies
 
   return (
-    <div style={{ padding: '20px' }}>
-      <ToastContainer position="top-right" autoClose={5000} />
-      
-      <h1>Ethereum Wallet</h1>
-      <p>Contract Balance: {balance} ETH</p>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="Amount in ETH"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          style={{ margin: '5px' }}
-        />
-        <button onClick={deposit} style={{ margin: '5px' }}>Deposit</button>
-        <button onClick={withdraw} style={{ margin: '5px' }}>Withdraw</button>
-      </div>
-      <button onClick={getBalance} style={{ margin: '5px' }}>Refresh Balance</button>
+    <div className="app-container">
+      <ToastContainer />
+      <h1>Task Contract</h1>
+      {!walletConnected ? (
+        <button onClick={connectWallet} className="connect-wallet-btn">
+          Connect Wallet
+        </button>
+      ) : (
+        <>
+          <div className="input-container">
+            <input
+              type="text"
+              placeholder="Task Title"
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Task Description"
+              value={taskText}
+              onChange={(e) => setTaskText(e.target.value)}
+            />
+            <button onClick={addTask}>Add Task</button>
+          </div>
+          <h2>My Tasks</h2>
+          <ul className="task-list">
+            {tasks.map((task, index) => (
+              <li key={index} className="task-item">
+                <span>{task.taskText}</span>
+                <button onClick={() => deleteTask(task.id)} className="delete-btn">
+                  X
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
+
