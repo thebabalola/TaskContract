@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import { useState, useEffect } from 'react';
 import abi from './abi.json';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import './App.css';
 
 const App = () => {
@@ -65,8 +65,8 @@ const App = () => {
         await tx.wait();
 
         getTasks();
-      } catch {
-        toast.error("Failed to delete task")
+      } catch (error) {
+        console.error("Error deleting task:", error);
       }
     }
   };
