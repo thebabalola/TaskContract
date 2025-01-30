@@ -8,7 +8,7 @@ const App = () => {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskText, setTaskText] = useState("");  
   const [tasks, setTasks] = useState([]);
-  const myContractAddress = "0x20421DF65e39676cE426c62175e79945f9505Dd4";
+  const myContractAddress = "0x2e7e2f04285Ae3D08ec78836107715EE49E8885e";
 
   const requestAccounts = async () => { 
     await window.ethereum.request({ method: "eth_requestAccounts" });
